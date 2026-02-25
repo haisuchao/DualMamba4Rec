@@ -1,0 +1,6 @@
+dataset/
+log/
+log_tensorboard/
+__pycache__/
+saved/
+.ipynb_checkpoints/

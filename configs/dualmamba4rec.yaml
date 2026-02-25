@@ -1,0 +1,82 @@
+# ════════════════════════════════════════════════════════════════
+# DualMamba4Rec — Unified Configuration
+# Dùng chung cho: diginetica, tmall, tafeng, yoochoose1_64
+# Chạy: python train.py --dataset <tên_dataset>
+# ════════════════════════════════════════════════════════════════
+
+# ── Field Mappings ────────────────────────────────────────────────────────────
+# Khớp với header của file .inter:
+#   session_id:token   item_id_list:token_seq   item_id:token
+USER_ID_FIELD: session_id
+ITEM_ID_FIELD: item_id
+LIST_SUFFIX: _list                  # item_id + _list = item_id_list
+ITEM_LIST_LENGTH_FIELD: item_id_list_len
+MAX_ITEM_LIST_LENGTH: 50
+
+# ── Data Loading ──────────────────────────────────────────────────────────────
+# Cấu trúc thư mục:
+#   dataset/diginetica/
+#       diginetica.rec-train.inter
+#       diginetica.rec-valid.inter
+#       diginetica.rec-test.inter
+# (tương tự cho tmall, tafeng, yoochoose1_64)
+load_col:
+  inter: [session_id, item_id_list, item_id]
+
+benchmark_filename: [rec-train, rec-valid, rec-test]
+
+eval_args:
+  split: {LS: valid_and_test}      # đọc file benchmark_filename có sẵn
+  order: TO
+  mode: full                       # full ranking over all items
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+# channel_mode: 'dual'        → C-Mamba + GNN + AdaptiveGateFusion  (default)
+#               'mamba_only'  → chỉ C-Mamba, tương đương CMamba4Rec gốc
+#               'gnn_only'    → chỉ GNN Stream
+channel_mode: dual
+
+embedding_size: 64
+max_seq_length: 50
+
+# Channel A — C-Mamba
+n_layers: 2
+d_state: 32
+d_conv_mamba: 4
+expand: 2
+conv_kernel: 3
+ffn_multiplier: 4
+
+# Channel B — GNN
+gnn_layers: 2
+
+# Fusion
+n_heads: 4
+use_bidirectional_fusion: False
+
+dropout_prob: 0.3
+loss_type: CE
+
+# ── Training ──────────────────────────────────────────────────────────────────
+epochs: 50
+train_batch_size: 1024
+eval_batch_size: 256
+learning_rate: 0.001
+weight_decay: 1.0e-4
+optimizer: adam
+stopping_step: 10
+eval_step: 1
+
+# ── Evaluation ────────────────────────────────────────────────────────────────
+metrics: [Recall, MRR, NDCG, Hit]
+topk: [5, 10, 15, 20]
+valid_metric: MRR@20
+
+# ── System ────────────────────────────────────────────────────────────────────
+seed: 2020
+reproducibility: True
+gpu_id: 0
+use_gpu: True
+show_progress: True
+save_dataset: True
+save_dataloaders: True
