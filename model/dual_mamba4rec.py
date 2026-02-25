@@ -65,7 +65,7 @@ class DualMamba4Rec(SequentialRecommender):
         super().__init__(config, dataset)
 
         # ── Mode ─────────────────────────────────────────────────────────────
-        self.channel_mode = config.get('channel_mode', 'dual')
+        self.channel_mode = config['channel_mode']
         if self.channel_mode not in VALID_MODES:
             raise ValueError(
                 f"channel_mode phải là một trong {VALID_MODES}, "
@@ -74,8 +74,8 @@ class DualMamba4Rec(SequentialRecommender):
 
         # ── Hyperparameters ───────────────────────────────────────────────────
         self.d_model      = config['embedding_size']
-        self.dropout_prob = config.get('dropout_prob', 0.3)
-        self.loss_type    = config.get('loss_type', 'CE')
+        self.dropout_prob = config['dropout_prob']
+        self.loss_type    = config['loss_type']
 
         # ── Shared Embedding ──────────────────────────────────────────────────
         self.item_embedding = nn.Embedding(
@@ -89,13 +89,13 @@ class DualMamba4Rec(SequentialRecommender):
         # ── Channel A: C-Mamba ────────────────────────────────────────────────
         if self.channel_mode in ('mamba_only', 'dual'):
             self.cmamba_encoder = CMambaEncoder(
-                n_layers     = config.get('n_layers', 2),
+                n_layers     = config['n_layers'],
                 d_model      = self.d_model,
-                d_state      = config.get('d_state', 32),
-                d_conv_mamba = config.get('d_conv_mamba', 4),
-                expand       = config.get('expand', 2),
-                conv_kernel  = config.get('conv_kernel', 3),
-                ffn_multiplier = config.get('ffn_multiplier', 4),
+                d_state      = config['d_state'],
+                d_conv_mamba = config['d_conv_mamba'],
+                expand       = config['expand'],
+                conv_kernel  = config['conv_kernel'],
+                ffn_multiplier = config['ffn_multiplier'],
                 dropout      = self.dropout_prob,
             )
 
@@ -104,7 +104,7 @@ class DualMamba4Rec(SequentialRecommender):
             self.gnn_stream = GNNStream(
                 n_items  = self.n_items,
                 d_model  = self.d_model,
-                n_layers = config.get('gnn_layers', 2),
+                n_layers = config['gnn_layers'],
                 dropout  = self.dropout_prob,
             )
             self.graph_builder = GlobalGraphBuilder(n_items=self.n_items)
