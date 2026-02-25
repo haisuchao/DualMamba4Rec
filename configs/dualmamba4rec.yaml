@@ -68,9 +68,9 @@ stopping_step: 10
 eval_step: 1
 
 # ── Evaluation ────────────────────────────────────────────────────────────────
-metrics: [Recall, MRR, NDCG, Hit]
+metrics: [Recall, MRR]
 topk: [5, 10, 15, 20]
-valid_metric: MRR@20
+valid_metric: Recall@20
 
 # ── System ────────────────────────────────────────────────────────────────────
 seed: 2020

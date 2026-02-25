@@ -242,7 +242,7 @@ class DualMamba4Rec(SequentialRecommender):
         if self.loss_type == 'CE':
             # weight[1:] bỏ padding index 0 → (n_items, d)
             # pos_items là 1-based → trừ 1 để align
-            scores = torch.matmul(s, self.item_embedding.weight[1:].T)  # (B, n_items)
+            scores = torch.matmul(s, self.item_embedding.weight.transpose(0, 1))  # (B, n_items)
             return self.loss_fct(scores, pos_items - 1)
         else:  # BPR
             neg_items = interaction[self.NEG_ITEM_ID]
@@ -264,4 +264,4 @@ class DualMamba4Rec(SequentialRecommender):
 
         s = self.forward(item_seq, item_seq_len)                # (B, d)
         # weight[1:] → (n_items, d), bỏ padding index 0
-        return torch.matmul(s, self.item_embedding.weight[1:].T)  # (B, n_items)
+        return torch.matmul(s, self.item_embedding.weight.transpose(0, 1))  # (B, n_items)
